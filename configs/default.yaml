@@ -1,0 +1,62 @@
+experiment:
+  name: graspclipd_default
+  output_dir: logs
+  seed: 42
+  use_wandb: false
+  wandb_project: graspclipd
+
+data:
+  base_root: data/grasp-anything          # chứa image/
+  pp_root: data/grasp-anything-plus       # chứa grasp_instructions/ và grasp_label_positive/
+  image_size: 224
+  output_size: 224
+  num_workers: 8
+  pin_memory: true
+  max_train_samples: null
+  max_val_samples: null
+  splits:
+    train: train      # hoặc path đến file .txt chứa scene_ids
+    val: val          # hoặc 'all'
+
+model:
+  visual_backbone: dinov2_vitb14
+  text_encoder: ViT-B-32
+  text_pretrained: openai
+  projection_dim: 768
+  decoder_channels: [512, 256, 128, 64]
+  fusion_mode: film_multiscale       # 'concat' | 'film_last' | 'film_multiscale'
+  use_cross_attention: true
+  cross_attn_heads: 8
+  freeze_visual: true
+  freeze_text: true
+
+loss:
+  weight_quality: 1.0
+  weight_angle: 1.0
+  weight_width: 0.5
+
+train:
+  epochs: 60
+  batch_size: 64
+  amp: true
+  grad_clip: 1.0
+  log_every: 50
+  eval_every: 1
+  save_top_k: 3
+
+optimizer:
+  type: adamw
+  lr_decoder: 1.0e-4
+  lr_backbone: 1.0e-5
+  weight_decay: 0.05
+  betas: [0.9, 0.95]
+
+scheduler:
+  type: cosine
+  warmup_epochs: 2
+  min_lr: 1.0e-6
+
+evaluation:
+  iou_threshold: 0.25
+  angle_threshold_deg: 30
+  topk: 1
